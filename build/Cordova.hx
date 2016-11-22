@@ -37,8 +37,8 @@ class Cordova
 		var refresh = config.getValue('define.refreshPlugin', 'none');
 		var platform = config.getValue('cordova.platform');
 
-		var version = config.getValue('cordova.version');
-		if(version != null) platform += '@$version';
+		var platformVersion = config.getValue('cordova.platformVersion');
+		if (platformVersion != null) platform += '@$platformVersion';
 		
 		var path = config.getValue('cordova.path');
 		var pluginConfigs = config.getValue('cordova.plugins', new Array<OrderedMap>());
