@@ -1,2 +1,3 @@
 /haxelib.zip
 .DS_Store
+*.sublime-*

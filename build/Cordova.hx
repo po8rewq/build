@@ -134,7 +134,7 @@ class Cordova
 		cordova(path, ["platform", "add", platform + (platformVersion != '' ? '@$platformVersion' : '') ]);
 
 		// should be removed - gradle issue
-		if(platform.indexOf("android") != -1)
+		if (platform.indexOf("android") != -1)
 			File.saveContent(Path.join([path, "platforms", "android", "gradle.properties"]), "android.useDeprecatedNdk=true");
 		
 		/*
@@ -143,10 +143,10 @@ class Cordova
 		 */
 		var cmdResult = Cli.cmd('cordova', ["plugin", "list"], {logCommand:true, logOutput:true, workingDirectory:path});
 		var cordovaInstalledPlugin = cmdResult.split("\n");
-		for(installedPlugin in cordovaInstalledPlugin)
+		for (installedPlugin in cordovaInstalledPlugin)
 		{
 			var infos = installedPlugin.split(" ");
-			if(infos[0] != "")
+			if (infos[0] != "")
 				cordova(path, ["plugin", "remove", infos[0]]);
 		} // TODO: will return true if installed via plugman
 
