@@ -43,7 +43,8 @@ class Cordova
 
 	static function prepare(config:Config)
 	{
-		var platform = getPlatform(config);
+		var platform = config.getValue('cordova.platform');
+		var platformVersion = config.getValue('cordova.platformVersion', '');
 		
 		var path = config.getValue('cordova.path');
 		var plugins = getPluginsList(config);
@@ -51,7 +52,7 @@ class Cordova
 		var platformPath = '$path/platforms/$platform';
 
 		if (!Cli.exists(platformPath))
-			cordova(path, ['platform', 'add', platform]);
+			cordova(path, ['platform', 'add', platform + (platformVersion != '' ? '@$platformVersion' : '') ]);
 
 		for (plugin in plugins)
 			installCordovaPlugin(CordovaPluginMethod.DEFAULT, path, platform, plugin);
@@ -59,9 +60,7 @@ class Cordova
 
 	static function installCordovaPlugin(method: CordovaPluginMethod, path: String, platform:String, plugin:CordovaPlugin)
 	{
-		var refresh = 'none'; //config.getValue('define.refreshPlugin', 'none');
-		// var path = config.getValue('cordova.path');
-		// var platform = getPlatform(config);
+		var refresh = 'none';
 
 		var exists = Cli.exists('$path/plugins/${plugin.id}');
 		var shouldRefresh = refresh == 'all' || refresh == plugin.id;
@@ -93,8 +92,8 @@ class Cordova
 	{
 		var platform = config.getValue('cordova.platform');
 
-		var platformVersion = config.getValue('cordova.platformVersion', false);
-		if (platformVersion != null) platform += '@$platformVersion';
+		var platformVersion = config.getValue('cordova.platformVersion', '');
+		if (platformVersion != '') platform += '@$platformVersion';
 
 		return platform;
 	}
@@ -115,7 +114,6 @@ class Cordova
 
 	static function createEmptyTemplate(config:Config)
 	{
-		var platform = getPlatform(config);
 		var path = config.getValue('template.path');
 
 		var pluginInstallMethod = Type.createEnum(CordovaPluginMethod, config.getValue("template.pluginInstallMethod", 'default').toUpperCase());
@@ -125,20 +123,20 @@ class Cordova
 		 * because when adding the android version, 
 		 * you must provide one. That's not the case with iOS
 		 */
-		cordova(path, ["create", "./", config.getValue('android.packageName'), config.getValue('app.name')]);
+		if (FileSystem.readDirectory(path).length == 0)
+			cordova(path, ["create", "./", config.getValue('android.packageName'), config.getValue('app.name')]);
 
 		var plugins = getPluginsList(config);
 
-		var platforms: Array<String> = config.getValue('template.platforms');
-		for (platform in platforms)
-		{
-			cordova(path, ["platform", "add", platform]);
+		var platform = config.getValue('cordova.platform');
+		var platformVersion = config.getValue('cordova.platformVersion', '');
+	
+		cordova(path, ["platform", "add", platform + (platformVersion != '' ? '@$platformVersion' : '') ]);
 
-			// should be removed - gradle issue
-			if(platform == "android")
-				File.saveContent(Path.join([path, "platforms", "android", "gradle.properties"]), "android.useDeprecatedNdk=true");
-		}
-
+		// should be removed - gradle issue
+		if(platform.indexOf("android") != -1)
+			File.saveContent(Path.join([path, "platforms", "android", "gradle.properties"]), "android.useDeprecatedNdk=true");
+		
 		/*
 		 * we have to remove all plugin installed by cordova
 		 * plugman installed and cordova installed plugin are not compatible together
@@ -150,13 +148,10 @@ class Cordova
 			var infos = installedPlugin.split(" ");
 			if(infos[0] != "")
 				cordova(path, ["plugin", "remove", infos[0]]);
-		}
+		} // TODO: will return true if installed via plugman
 
-		for (platform in platforms)
-		{
-			for (plugin in plugins)
-				installCordovaPlugin(pluginInstallMethod, path, platform, plugin);
-		}
+		for (plugin in plugins)
+			installCordovaPlugin(pluginInstallMethod, path, platform, plugin);
 
 		// Cli.zip(Path.join([path, "platforms"]), Path.join(["bin", "Cordova-Template.zip"]), path);
 	}
