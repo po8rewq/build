@@ -145,8 +145,6 @@ class Cordova
 
 		for (plugin in plugins)
 			installCordovaPlugin(pluginInstallMethod, path, platform, plugin);
-
-		// Cli.zip(Path.join([path, "platforms"]), Path.join(["bin", "Cordova-Template.zip"]), path);
 	}
 }
 
