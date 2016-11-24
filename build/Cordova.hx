@@ -68,7 +68,6 @@ class Cordova
 
 		switch (method) {
 			case PLUGMAN:
-
 				plugman(path, [
 					"install", 
 					"--platform", platform, 
@@ -86,16 +85,6 @@ class Cordova
 					args = args.concat(plugin.args);
 				cordova(path, args);
 		}
-	}
-
-	static function getPlatform(config:Config):String
-	{
-		var platform = config.getValue('cordova.platform');
-
-		var platformVersion = config.getValue('cordova.platformVersion', '');
-		if (platformVersion != '') platform += '@$platformVersion';
-
-		return platform;
 	}
 
 	static function getPluginsList(config:Config):Array<CordovaPlugin>
@@ -136,19 +125,23 @@ class Cordova
 		// should be removed - gradle issue
 		if (platform.indexOf("android") != -1)
 			File.saveContent(Path.join([path, "platforms", "android", "gradle.properties"]), "android.useDeprecatedNdk=true");
+		// ----
 		
 		/*
 		 * we have to remove all plugin installed by cordova
 		 * plugman installed and cordova installed plugin are not compatible together
 		 */
-		var cmdResult = Cli.cmd('cordova', ["plugin", "list"], {logCommand:true, logOutput:true, workingDirectory:path});
-		var cordovaInstalledPlugin = cmdResult.split("\n");
-		for (installedPlugin in cordovaInstalledPlugin)
+		if (pluginInstallMethod == PLUGMAN)
 		{
-			var infos = installedPlugin.split(" ");
-			if (infos[0] != "")
-				cordova(path, ["plugin", "remove", infos[0]]);
-		} // TODO: will return true if installed via plugman
+			var cmdResult = Cli.cmd('cordova', ["plugin", "list"], {logCommand:true, logOutput:true, workingDirectory:path});
+			var cordovaInstalledPlugin = cmdResult.split("\n");
+			for (installedPlugin in cordovaInstalledPlugin)
+			{
+				var infos = installedPlugin.split(" ");
+				if (infos[0] != "")
+					cordova(path, ["plugin", "remove", infos[0]]);
+			}
+		}
 
 		for (plugin in plugins)
 			installCordovaPlugin(pluginInstallMethod, path, platform, plugin);
@@ -163,7 +156,7 @@ enum CordovaPluginMethod {
 }
 
 typedef CordovaPlugin = {
-	var id:String;
-	var args:Array<String>;
-	var path:String;
+	var id: String;
+	var args: Array<String>;
+	var path: String;
 }
