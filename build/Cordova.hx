@@ -43,6 +43,7 @@ class Cordova
 
 	static function prepare(config:Config)
 	{
+		var refresh = config.getValue('define.refreshPlugin', 'none');
 		var platform = config.getValue('cordova.platform');
 		var platformVersion = config.getValue('cordova.platformVersion', '');
 		
@@ -55,13 +56,11 @@ class Cordova
 			cordova(path, ['platform', 'add', platform + (platformVersion != '' ? '@$platformVersion' : '') ]);
 
 		for (plugin in plugins)
-			installCordovaPlugin(CordovaPluginMethod.DEFAULT, path, platform, plugin);
+			installCordovaPlugin(CordovaPluginMethod.DEFAULT, path, platform, plugin, refresh);
 	}
 
-	static function installCordovaPlugin(method: CordovaPluginMethod, path: String, platform:String, plugin:CordovaPlugin)
+	static function installCordovaPlugin(method: CordovaPluginMethod, path: String, platform:String, plugin:CordovaPlugin, refresh: String)
 	{
-		var refresh = 'none';
-
 		var exists = Cli.exists('$path/plugins/${plugin.id}');
 		var shouldRefresh = refresh == 'all' || refresh == plugin.id;
 		if (exists && !shouldRefresh) return;
@@ -143,8 +142,10 @@ class Cordova
 			}
 		}
 
+		var refresh = config.getValue('define.refreshPlugin', 'none');
+
 		for (plugin in plugins)
-			installCordovaPlugin(pluginInstallMethod, path, platform, plugin);
+			installCordovaPlugin(pluginInstallMethod, path, platform, plugin, refresh);
 	}
 }
 
