@@ -67,18 +67,20 @@ class Cordova
 
 		switch (method) {
 			case PLUGMAN:
-				plugman(path, [
+				var args = [
 					"install", 
 					"--platform", platform, 
 					"--plugin", plugin.path != null ? plugin.path : plugin.id, 
 					"--project", Path.join(["platforms", platform]),
 					"--plugins_dir", 'plugins_$platform' 
-				]);
+				];
+				if (plugin.args != null)
+					args = args.concat(plugin.args);
+				plugman(path, args);
 
 			default :
 				var pluginPath = plugin.path == null ? plugin.id : plugin.path;
 				if (exists) cordova(path, ['plugin', 'remove', plugin.id]);
-				
 				var args = ['plugin', 'add', pluginPath];
 				if (plugin.args != null)
 					args = args.concat(plugin.args);
